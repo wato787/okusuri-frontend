@@ -28,6 +28,9 @@ jobs:
           
       - name: Install dependencies
         run: pnpm install 
+
+      - name: Install Biome
+        run: pnpm add -D @biomejs/biome
         
       - name: Lint with Biome
         run: pnpm exec @biomejs/biome check --apply ./src
