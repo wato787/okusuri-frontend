@@ -33,10 +33,7 @@ jobs:
         run: pnpm add -D @biomejs/biome
         
       - name: Lint with Biome
-        run: pnpm exec @biomejs/biome check --apply ./src
-      
-      - name: Format with Biome
-        run: pnpm exec @biomejs/biome format --write ./src
+        run: pnpm lint
         
       - name: Build Next.js application
         run: pnpm build
