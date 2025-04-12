@@ -34,9 +34,6 @@ jobs:
         
       - name: Lint with Biome
         run: pnpm lint
-      
-      - name: Format with Biome
-        run: pnpm format
         
       - name: Build Next.js application
         run: pnpm build
