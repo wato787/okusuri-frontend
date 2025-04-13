@@ -1,4 +1,5 @@
 "use server";
+import { redirect } from "next/navigation";
 import { authClient } from "./auth";
 
 export const signIn = async () => {
@@ -6,4 +7,5 @@ export const signIn = async () => {
 		provider: "google",
 		callbackURL: "/dashboard",
 	});
+	redirect(data.data?.url as string);
 };
