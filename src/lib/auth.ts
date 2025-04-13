@@ -1,5 +1,6 @@
 import { betterAuth } from "better-auth";
 import { createAuthClient } from "better-auth/client";
+import { Pool } from "pg";
 
 export const auth = betterAuth({
 	socialProviders: {
@@ -8,6 +9,9 @@ export const auth = betterAuth({
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
 		},
 	},
+	database: new Pool({
+		connectionString: process.env.DATABASE_URL,
+	}),
 });
 
 const authClient = createAuthClient({
