@@ -24,13 +24,11 @@ export function AuthCard({
           </CardDescription>
         </CardHeader>
         <CardContent>
-          <form>
-            <div className='flex flex-col gap-6'>
-              <Button onClick={signIn} className='w-full'>
-                Googleでログイン
-              </Button>
-            </div>
-          </form>
+          <div className='flex flex-col gap-6'>
+            <Button onClick={signIn} className='w-full'>
+              Googleでログイン
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </div>
