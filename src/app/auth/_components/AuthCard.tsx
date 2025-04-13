@@ -25,9 +25,7 @@ export function AuthCard({
         <CardContent>
           <form>
             <div className='flex flex-col gap-6'>
-              <Button variant='outline' className='w-full'>
-                Googleでログイン
-              </Button>
+              <Button className='w-full'>Googleでログイン</Button>
             </div>
           </form>
         </CardContent>
