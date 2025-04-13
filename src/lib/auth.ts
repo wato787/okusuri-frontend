@@ -16,6 +16,12 @@ export const auth = betterAuth({
 	},
 	database: pool,
 	plugins: [nextCookies()],
+	session: {
+		cookieCache: {
+			enabled: true,
+			maxAge: 60 * 60 * 24 * 7, // 7 days
+		},
+	},
 });
 
 export const authClient = createAuthClient({
