@@ -7,6 +7,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
+import { signIn } from '@/lib/auth';
 import { cn } from '@/lib/utils';
 
 export function AuthCard({
@@ -25,7 +26,9 @@ export function AuthCard({
         <CardContent>
           <form>
             <div className='flex flex-col gap-6'>
-              <Button className='w-full'>Googleでログイン</Button>
+              <Button onClick={signIn} className='w-full'>
+                Googleでログイン
+              </Button>
             </div>
           </form>
         </CardContent>
