@@ -10,11 +10,14 @@ export const auth = betterAuth({
 	},
 });
 
-const authClient = createAuthClient();
+const authClient = createAuthClient({
+	baseURL: process.env.NEXT_PUBLIC_BASE_URL,
+});
 
 export const signIn = async () => {
 	const data = await authClient.signIn.social({
 		provider: "google",
+		callbackURL: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback/google`,
 	});
 	console.log("data", data);
 	return data;
