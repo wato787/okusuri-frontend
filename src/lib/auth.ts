@@ -1,6 +1,11 @@
 import { betterAuth } from "better-auth";
 import { createAuthClient } from "better-auth/client";
+import { nextCookies } from "better-auth/next-js";
 import { Pool } from "pg";
+
+const pool = new Pool({
+	connectionString: process.env.DATABASE_URL,
+});
 
 export const auth = betterAuth({
 	socialProviders: {
@@ -9,20 +14,10 @@ export const auth = betterAuth({
 			clientSecret: process.env.GOOGLE_CLIENT_SECRET as string,
 		},
 	},
-	database: new Pool({
-		connectionString: process.env.DATABASE_URL,
-	}),
+	database: pool,
+	plugins: [nextCookies()],
 });
 
-const authClient = createAuthClient({
+export const authClient = createAuthClient({
 	baseURL: process.env.NEXT_PUBLIC_BASE_URL,
 });
-
-export const signIn = async () => {
-	const data = await authClient.signIn.social({
-		provider: "google",
-		callbackURL: `${process.env.NEXT_PUBLIC_BASE_URL}/api/auth/callback/google`,
-	});
-	console.log("data", data);
-	return data;
-};

@@ -7,7 +7,8 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { signIn } from '@/lib/auth';
+import { signIn } from '@/lib/login';
+
 import { cn } from '@/lib/utils';
 
 export function AuthCard({
