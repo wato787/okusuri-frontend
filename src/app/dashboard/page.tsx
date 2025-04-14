@@ -1,20 +1,18 @@
 'use client';
-import { messaging } from '@/lib/firebase';
-import { getToken } from 'firebase/messaging';
 
 const page = () => {
-  const fcmToken = getToken(messaging, {
-    vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
-  })
-    .then((currentToken) => {
-      if (currentToken) {
-        console.log('currentToken', currentToken);
-        return currentToken;
-      }
-    })
-    .catch((err) => {
-      console.log('An error occurred while retrieving token. ', err);
-    });
+  // const fcmToken = getToken(messaging, {
+  //   vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
+  // })
+  //   .then((currentToken) => {
+  //     if (currentToken) {
+  //       console.log('currentToken', currentToken);
+  //       return currentToken;
+  //     }
+  //   })
+  //   .catch((err) => {
+  //     console.log('An error occurred while retrieving token. ', err);
+  //   });
   return <div>page</div>;
 };
 
