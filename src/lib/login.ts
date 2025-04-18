@@ -7,5 +7,6 @@ export const signIn = async () => {
 		provider: "google",
 		callbackURL: "/dashboard",
 	});
+
 	redirect(data.data?.url as string);
 };
