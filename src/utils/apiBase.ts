@@ -69,6 +69,7 @@ const fetchWithOptions = async <T>(
 ): Promise<ApiResponse<T>> => {
 	const url = `${API_BASE_URL}${path}`;
 	const response = await fetch(url, options);
+
 	const data = await response.json();
 	return {
 		status: response.status,
