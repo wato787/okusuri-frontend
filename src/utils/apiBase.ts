@@ -49,9 +49,11 @@ type NextFetchOptions = {
 const API_BASE_URL = process.env.API_BASE_URL || "";
 
 const getAccessToken = async () => {
-	const accessToken = (await cookies()).get("better-auth.session_token");
+	const accessToken = (await cookies()).get(
+		"__Secure-better-auth.session_token",
+	);
 	if (accessToken) {
-		return accessToken.value;
+		return accessToken.value.split(".")[0];
 	}
 	return null;
 };
