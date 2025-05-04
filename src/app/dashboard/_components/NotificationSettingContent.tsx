@@ -5,6 +5,7 @@ import { messaging } from '@/lib/firebase';
 import { getToken } from 'firebase/messaging';
 import { registerNotificationSetting } from '../action';
 import { registerNotificationSettingSchama } from '../schema';
+import toast from 'react-hot-toast';
 
 const NotificationSettingContent = () => {
   const handleClick = async () => {
@@ -33,6 +34,7 @@ const NotificationSettingContent = () => {
     }
     const res = await registerNotificationSetting(vaidatedFields.data);
     console.log(res);
+    toast.success('Successfully toasted!');
   };
   return (
     <div>
