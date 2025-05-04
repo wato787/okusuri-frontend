@@ -33,7 +33,7 @@ const NotificationSettingContent = ({ notificationSetting }: Props) => {
       return;
     }
     const res = await registerNotificationSetting(vaidatedFields.data);
-    console.log(res);
+
     if (!res.success) return toast.error('通知の設定に失敗しました');
     toast.success('通知の設定が完了しました');
   };
