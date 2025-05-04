@@ -14,7 +14,9 @@ export const registerNotificationSetting = async (
 	if (res.status !== 200) {
 		return {
 			success: false,
-		}
+		};
 	}
-	return res.data;
+	return {
+		success: true,
+	};
 };

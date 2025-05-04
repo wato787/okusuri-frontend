@@ -23,23 +23,17 @@ const NotificationSettingContent = ({ notificationSetting }: Props) => {
     const permission = await Notification.requestPermission();
     const isEnabled = permission === 'granted';
 
-    // webプラットフォームの判定
-    const platform = navigator.userAgent.includes('Android')
-      ? 'android'
-      : navigator.userAgent.includes('iPhone')
-      ? 'ios'
-      : 'web';
-
     const vaidatedFields = registerNotificationSettingSchama.safeParse({
       fcmToken,
       isEnabled,
-      platform,
+      platform: 'web',
     });
     if (!vaidatedFields.success) {
       console.error(vaidatedFields.error);
       return;
     }
     const res = await registerNotificationSetting(vaidatedFields.data);
+    console.log(res);
     if (!res.success) return toast.error('通知の設定に失敗しました');
     toast.success('通知の設定が完了しました');
   };
