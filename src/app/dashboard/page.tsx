@@ -1,8 +1,6 @@
-'use client';
-
 import NotificationSettingContent from './_components/NotificationSettingContent';
 
-const page = () => {
+const DashBoard = () => {
   return (
     <div>
       <NotificationSettingContent />
@@ -10,4 +8,4 @@ const page = () => {
   );
 };
 
-export default page;
+export default DashBoard;
