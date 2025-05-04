@@ -27,7 +27,17 @@ firebase.initializeApp({
 const messaging = firebase.messaging();
 
 // バックグラウンドメッセージの処理
+// 重複チェックを追加
+let isHandlingMessage = false;
+
 messaging.onBackgroundMessage((payload) => {
+	if (isHandlingMessage) {
+		console.log("メッセージ処理中のため、スキップします");
+		return;
+	}
+
+	isHandlingMessage = true;
+
 	console.log("バックグラウンドで受信したメッセージ:", payload);
 
 	const notificationTitle = payload.notification.title;
@@ -36,5 +46,9 @@ messaging.onBackgroundMessage((payload) => {
 		icon: "/logo.png",
 	};
 
-	self.registration.showNotification(notificationTitle, notificationOptions);
+	self.registration
+		.showNotification(notificationTitle, notificationOptions)
+		.finally(() => {
+			isHandlingMessage = false;
+		});
 });
