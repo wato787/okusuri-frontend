@@ -1,9 +1,12 @@
 import NotificationSettingContent from './_components/NotificationSettingContent';
+import { getNotificationSetting } from './fetcher';
 
-const DashBoard = () => {
+const DashBoard = async () => {
+  const notificationSetting = await getNotificationSetting();
+
   return (
     <div>
-      <NotificationSettingContent />
+      <NotificationSettingContent notificationSetting={notificationSetting} />
     </div>
   );
 };
