@@ -3,11 +3,18 @@
 import { Button } from '@/components/ui/button';
 import { messaging } from '@/lib/firebase';
 import { getToken } from 'firebase/messaging';
-import { registerNotificationSetting } from '../action';
-import { registerNotificationSettingSchama } from '../schema';
 import toast from 'react-hot-toast';
+import { registerNotificationSetting } from '../action';
+import {
+  type NotificationSetting,
+  registerNotificationSettingSchama,
+} from '../schema';
 
-const NotificationSettingContent = () => {
+type Props = {
+  notificationSetting?: NotificationSetting;
+};
+
+const NotificationSettingContent = ({ notificationSetting }: Props) => {
   const handleClick = async () => {
     const fcmToken = await getToken(messaging, {
       vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
@@ -38,7 +45,9 @@ const NotificationSettingContent = () => {
   };
   return (
     <div className='flex flex-col items-center justify-center h-screen'>
-      <Button onClick={handleClick}>PUSH通知を受け取る</Button>
+      <Button disabled={!!notificationSetting} onClick={handleClick}>
+        PUSH通知を受け取る
+      </Button>
     </div>
   );
 };
