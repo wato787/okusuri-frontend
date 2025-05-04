@@ -33,11 +33,11 @@ const NotificationSettingContent = () => {
       return;
     }
     const res = await registerNotificationSetting(vaidatedFields.data);
-    console.log(res);
-    toast.success('Successfully toasted!');
+    if (!res.success) return toast.error('通知の設定に失敗しました');
+    toast.success('通知の設定が完了しました');
   };
   return (
-    <div>
+    <div className='flex flex-col items-center justify-center h-screen'>
       <Button onClick={handleClick}>PUSH通知を受け取る</Button>
     </div>
   );
