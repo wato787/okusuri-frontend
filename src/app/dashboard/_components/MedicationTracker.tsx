@@ -52,12 +52,14 @@ export function MedicationTracker() {
                   ? 'bg-green-600 hover:bg-green-700'
                   : ''
               }`}
+              type='button'
               onClick={() => setMedicationTaken(true)}
             >
               <Check className='mr-2 h-5 w-5' />
               服薬した
             </Button>
             <Button
+              type='button'
               variant={medicationTaken === false ? 'default' : 'outline'}
               className={`h-16 text-lg ${
                 medicationTaken === false ? 'bg-red-600 hover:bg-red-700' : ''
@@ -81,6 +83,7 @@ export function MedicationTracker() {
         <CardContent>
           <div className='grid grid-cols-2 gap-4'>
             <Button
+              type='button'
               variant={bleedingStatus === true ? 'default' : 'outline'}
               className={`h-16 text-lg ${
                 bleedingStatus === true ? 'bg-red-600 hover:bg-red-700' : ''
@@ -97,6 +100,7 @@ export function MedicationTracker() {
                   ? 'bg-green-600 hover:bg-green-700'
                   : ''
               }`}
+              type='button'
               onClick={() => setBleedingStatus(false)}
             >
               <Check className='mr-2 h-5 w-5' />
