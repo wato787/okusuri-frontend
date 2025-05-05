@@ -1,13 +1,11 @@
 import { MedicationTracker } from './_components/MedicationTracker';
-import NotificationSettingContent from './_components/NotificationSettingContent';
-import { getNotificationSetting } from './fetcher';
 
 const DashBoard = async () => {
-  const notificationSetting = await getNotificationSetting();
+  // const notificationSetting = await getNotificationSetting();
 
   return (
-    <div>
-      <NotificationSettingContent notificationSetting={notificationSetting} />
+    <div className='flex flex-col items-center justify-center h-screen'>
+      {/* <NotificationSettingContent notificationSetting={notificationSetting} /> */}
       <MedicationTracker />
     </div>
   );
