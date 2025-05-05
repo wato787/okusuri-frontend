@@ -5,7 +5,7 @@ const DashBoard = async () => {
   // const notificationSetting = await getNotificationSetting();
 
   return (
-    <div className='flex flex-col items-center justify-center h-screen'>
+    <div className='flex flex-col items-center justify-center h-screen p-6'>
       {/* <NotificationSettingContent notificationSetting={notificationSetting} /> */}
       <MedicationTracker />
     </div>
