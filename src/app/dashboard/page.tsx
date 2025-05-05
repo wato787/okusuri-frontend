@@ -1,3 +1,4 @@
+import { MedicationTracker } from './_components/MedicationTracker';
 import NotificationSettingContent from './_components/NotificationSettingContent';
 import { getNotificationSetting } from './fetcher';
 
@@ -7,6 +8,7 @@ const DashBoard = async () => {
   return (
     <div>
       <NotificationSettingContent notificationSetting={notificationSetting} />
+      <MedicationTracker />
     </div>
   );
 };
