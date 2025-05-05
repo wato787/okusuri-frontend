@@ -1,6 +1,7 @@
 import { MedicationTracker } from './_components/MedicationTracker';
 
 const DashBoard = async () => {
+  // TODO:UI修正
   // const notificationSetting = await getNotificationSetting();
 
   return (
