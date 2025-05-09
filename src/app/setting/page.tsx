@@ -1,4 +1,4 @@
-import { NotificationSetting } from '../_components/NotificationSettingContent';
+import { NotificationSetting } from './_components/NotificationSettingContent';
 import { getNotificationSetting } from './fetcher';
 
 export default async function SettingPage() {

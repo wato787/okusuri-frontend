@@ -5,14 +5,14 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bell, BellOff } from 'lucide-react';
 import { useTransition } from 'react';
 
-import toast from 'react-hot-toast';
-import { registerNotificationSetting } from '../action';
 import { messaging } from '@/lib/firebase';
 import { getToken } from 'firebase/messaging';
+import toast from 'react-hot-toast';
+import { registerNotificationSetting } from '../../(home)/action';
 import {
   type NotificationSetting as NotificationSettingType,
   registerNotificationSettingSchama,
-} from '../setting/schema';
+} from '../schema';
 
 type Props = {
   notificationSetting?: NotificationSettingType;
