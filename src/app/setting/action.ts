@@ -1,6 +1,7 @@
 "use server";
 
 import { type BaseResponse, post } from "@/utils/apiBase";
+import { revalidateTag } from "next/cache";
 import type { RegisterNotificationSetting } from "./schema";
 
 export const registerNotificationSetting = async (
@@ -16,6 +17,8 @@ export const registerNotificationSetting = async (
 			success: false,
 		};
 	}
+
+	revalidateTag("notification-setting");
 	return {
 		success: true,
 	};

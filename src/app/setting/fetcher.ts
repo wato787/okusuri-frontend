@@ -7,6 +7,12 @@ import type { NotificationSetting } from "./schema";
 export const getNotificationSetting = async () => {
 	const res = await get<NotificationSetting | undefined>(
 		"/notification/setting",
+		{
+			cache: "force-cache",
+			next: {
+				tags: ["notification-setting"],
+			},
+		},
 	);
 	if (res.status !== 200) {
 		return undefined;
