@@ -1,11 +1,12 @@
-import { AuthCard } from './_components/AuthCard';
+import { MedicationTracker } from './_components/MedicationTracker';
 
-const AuthPage = () => {
+const Home = async () => {
   return (
-    <div className='w-full h-screen flex items-center justify-center'>
-      <AuthCard className='w-1/2' />
+    <div className='container max-w-md mx-auto py-8 px-4'>
+      <h1 className='text-2xl font-bold text-center mb-6'>お薬管理</h1>
+      <MedicationTracker />
     </div>
   );
 };
 
-export default AuthPage;
+export default Home;
