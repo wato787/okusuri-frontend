@@ -1,5 +1,5 @@
 import { get } from "@/utils/apiBase";
-import type { NotificationSetting } from "./schema";
+import type { NotificationSetting } from "../schema";
 
 /**
  * 通知設定を取得する関数
