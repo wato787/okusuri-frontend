@@ -8,7 +8,8 @@ import { useTransition } from 'react';
 import { messaging } from '@/lib/firebase';
 import { getToken } from 'firebase/messaging';
 import toast from 'react-hot-toast';
-import { registerNotificationSetting } from '../../(home)/action';
+
+import { registerNotificationSetting } from '../action';
 import {
   type NotificationSetting as NotificationSettingType,
   registerNotificationSettingSchama,
