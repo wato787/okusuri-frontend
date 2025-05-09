@@ -12,7 +12,7 @@ import { getToken } from 'firebase/messaging';
 import {
   type NotificationSetting as NotificationSettingType,
   registerNotificationSettingSchama,
-} from '../schema';
+} from '../setting/schema';
 
 type Props = {
   notificationSetting?: NotificationSettingType;
