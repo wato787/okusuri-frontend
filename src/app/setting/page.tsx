@@ -7,7 +7,6 @@ export default async function SettingPage() {
 
   return (
     <div className='container max-w-md mx-auto py-8 px-4'>
-      <h1 className='text-2xl font-bold text-center mb-6'>設定</h1>
       <NotificationSetting notificationSetting={notificationSetting} />
     </div>
   );

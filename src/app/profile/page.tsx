@@ -13,8 +13,6 @@ import { Label } from '@/components/ui/label';
 export default function ProfilePage() {
   return (
     <div className='container max-w-md mx-auto pt-8 pb-24 px-4'>
-      <h1 className='text-2xl font-bold text-center mb-6'>プロフィール</h1>
-
       <Card>
         <CardHeader>
           <CardTitle>ユーザー情報</CardTitle>

@@ -3,8 +3,6 @@ import { Card, CardContent, CardHeader } from '@/components/ui/card';
 export default function CalendarLoading() {
   return (
     <div className='container max-w-md mx-auto py-8 px-4'>
-      <div className='h-8 bg-muted rounded animate-pulse w-1/2 mx-auto mb-6' />
-
       <Card className='mb-6'>
         <CardHeader className='pb-2'>
           <div className='flex items-center justify-between'>
