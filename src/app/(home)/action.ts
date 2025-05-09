@@ -1,6 +1,7 @@
 "use server";
 
 import { post } from "@/utils/apiBase";
+import { revalidateTag } from "next/cache";
 
 export const registerMedicationLog = async (req: {
 	hasBleeding: boolean;
@@ -11,6 +12,8 @@ export const registerMedicationLog = async (req: {
 			success: false,
 		};
 	}
+
+	revalidateTag("medication-log");
 	return {
 		success: true,
 	};
