@@ -1,70 +1,47 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Check, Droplet } from 'lucide-react';
+import { Calendar, Check, Droplet, Pill } from 'lucide-react';
 
-export function MonthlyStats() {
+export function StatsOverview() {
   // ダミーデータ
-  const monthlyData = [
-    {
-      month: '2025年5月',
-      totalDays: 31,
-      usageDays: 30,
-      bleedingDays: 3,
-      restPeriod: true,
-      usageRate: 97,
-    },
-    {
-      month: '2025年4月',
-      totalDays: 30,
-      usageDays: 30,
-      bleedingDays: 2,
-      restPeriod: false,
-      usageRate: 100,
-    },
-    {
-      month: '2025年3月',
-      totalDays: 31,
-      usageDays: 29,
-      bleedingDays: 4,
-      restPeriod: true,
-      usageRate: 94,
-    },
-  ];
+  const stats = {
+    totalDays: 120, // 総記録日数
+    maxConsecutiveDays: 45, // 最長連続服用日数
+    bleedingDays: 15, // 総出血日数
+    restPeriods: 4, // 休薬期間の回数
+  };
 
   return (
     <Card>
       <CardHeader className='pb-2'>
-        <CardTitle className='text-center'>月別詳細</CardTitle>
+        <CardTitle className='text-center'>概要</CardTitle>
       </CardHeader>
       <CardContent>
-        <div className='space-y-4'>
-          {monthlyData.map((data) => (
-            <div key={data.month} className='border rounded-lg p-3'>
-              <div className='flex justify-between items-center mb-2'>
-                <h3 className='font-medium'>{data.month}</h3>
-                <Badge variant={data.usageRate >= 95 ? 'success' : 'warning'}>
-                  {data.usageRate}%
-                </Badge>
-              </div>
+        <div className='grid grid-cols-2 gap-4'>
+          <div className='flex flex-col items-center justify-center p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg'>
+            <Calendar className='h-6 w-6 text-blue-500 mb-2' />
+            <div className='text-sm text-muted-foreground'>記録日数</div>
+            <div className='text-xl font-bold'>{stats.totalDays}日</div>
+          </div>
 
-              <div className='grid grid-cols-2 gap-2 text-sm'>
-                <div className='flex items-center'>
-                  <Check className='h-4 w-4 text-green-500 mr-1' />
-                  <span>服用日数: {data.usageDays}日</span>
-                </div>
-                <div className='flex items-center'>
-                  <Droplet className='h-4 w-4 text-red-500 mr-1' />
-                  <span>出血日数: {data.bleedingDays}日</span>
-                </div>
-              </div>
-
-              {data.restPeriod && (
-                <div className='mt-2 text-xs text-amber-600 dark:text-amber-400'>
-                  ※この月は休薬期間がありました
-                </div>
-              )}
+          <div className='flex flex-col items-center justify-center p-3 bg-green-50 dark:bg-green-900/20 rounded-lg'>
+            <Check className='h-6 w-6 text-green-500 mb-2' />
+            <div className='text-sm text-muted-foreground'>最長連続</div>
+            <div className='text-xl font-bold'>
+              {stats.maxConsecutiveDays}日
             </div>
-          ))}
+          </div>
+
+          <div className='flex flex-col items-center justify-center p-3 bg-red-50 dark:bg-red-900/20 rounded-lg'>
+            <Droplet className='h-6 w-6 text-red-500 mb-2' />
+            <div className='text-sm text-muted-foreground'>出血日数</div>
+            <div className='text-xl font-bold'>{stats.bleedingDays}日</div>
+          </div>
+
+          <div className='flex flex-col items-center justify-center p-3 bg-amber-50 dark:bg-amber-900/20 rounded-lg'>
+            <Pill className='h-6 w-6 text-amber-500 mb-2' />
+            <div className='text-sm text-muted-foreground'>休薬回数</div>
+            <div className='text-xl font-bold'>{stats.restPeriods}回</div>
+          </div>
         </div>
       </CardContent>
     </Card>
