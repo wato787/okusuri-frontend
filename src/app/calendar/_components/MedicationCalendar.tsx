@@ -1,14 +1,7 @@
 'use client';
 
-import { registerMedicationLog } from '@/app/(home)/action';
 import { Button } from '@/components/ui/button';
-import {
-  Card,
-  CardContent,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from '@/components/ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import {
   addMonths,
@@ -21,11 +14,19 @@ import {
   subMonths,
 } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { Check, ChevronLeft, ChevronRight, Droplet, Plus } from 'lucide-react';
+import { Check, ChevronLeft, ChevronRight, Droplet, X } from 'lucide-react';
 import { useState, useTransition } from 'react';
-
 import toast from 'react-hot-toast';
-import type { MedicationLog } from '../schema';
+import { motion, AnimatePresence } from 'framer-motion';
+import { registerMedicationLog } from '@/app/(home)/action';
+
+export type MedicationLog = {
+  id: number;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  hasBleeding: boolean;
+};
 
 type MedicationCalendarProps = {
   logs: MedicationLog[];
@@ -35,6 +36,9 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | undefined>(undefined);
   const [isPending, startTransition] = useTransition();
+  const [activeButton, setActiveButton] = useState<
+    'bleeding' | 'normal' | null
+  >(null);
 
   // 選択された日付のログを取得
   const selectedDayLog = selectedDay
@@ -70,6 +74,7 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
   // 日付をクリックしたときの処理
   const handleDayClick = (day: Date) => {
     setSelectedDay(day);
+    setActiveButton(null);
   };
 
   // 日付に対応するログを取得
@@ -80,6 +85,9 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
   // 記録を追加する処理
   const handleAddRecord = (hasBleeding: boolean) => {
     if (!selectedDay) return;
+
+    // クリックされたボタンをアクティブにする
+    setActiveButton(hasBleeding ? 'bleeding' : 'normal');
 
     startTransition(async () => {
       try {
@@ -92,9 +100,36 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
         });
 
         toast.success('記録が完了しました');
+
+        // 送信完了後、少し待ってからボタンのアクティブ状態をリセット
+        setTimeout(() => {
+          // ログを更新するために、ページをリロードする代わりに
+          // ローカルのログ配列を更新する（実際のアプリでは適切なデータ更新方法を使用）
+          const newLog = {
+            id: Date.now(),
+            createdAt: recordDate.toISOString(),
+            updatedAt: recordDate.toISOString(),
+            userId: 'current-user',
+            hasBleeding,
+          };
+
+          // 既存のログを更新または新しいログを追加
+          const existingLogIndex = logs.findIndex((log) =>
+            isSameDay(parseISO(log.createdAt), recordDate)
+          );
+
+          if (existingLogIndex >= 0) {
+            logs[existingLogIndex] = newLog;
+          } else {
+            logs.push(newLog);
+          }
+
+          setActiveButton(null);
+        }, 1000);
       } catch (error) {
         console.error('記録の追加に失敗しました', error);
         toast.error('記録の追加に失敗しました');
+        setActiveButton(null);
       }
     });
   };
@@ -109,9 +144,14 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
     return date > today;
   };
 
+  // 選択を解除する
+  const clearSelection = () => {
+    setSelectedDay(undefined);
+  };
+
   return (
     <div className='space-y-6'>
-      <Card>
+      <Card className='overflow-hidden shadow-lg border-0 rounded-xl'>
         <CardHeader className='pb-2'>
           <div className='flex items-center justify-between'>
             <Button
@@ -119,10 +159,11 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
               size='icon'
               onClick={prevMonth}
               aria-label='前月へ'
+              className='rounded-full h-9 w-9'
             >
               <ChevronLeft className='h-4 w-4' />
             </Button>
-            <CardTitle className='text-center'>
+            <CardTitle className='text-center text-lg'>
               {format(currentMonth, 'yyyy年MM月', { locale: ja })}
             </CardTitle>
             <Button
@@ -130,12 +171,13 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
               size='icon'
               onClick={nextMonth}
               aria-label='次月へ'
+              className='rounded-full h-9 w-9'
             >
               <ChevronRight className='h-4 w-4' />
             </Button>
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className='p-4'>
           <div className='grid grid-cols-7 gap-1'>
             {/* 曜日のヘッダー */}
             {weekdays.map((day, index) => (
@@ -163,14 +205,16 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
               const isFuture = isFutureDate(day);
 
               return (
-                <button
+                <motion.button
                   key={day.toString()}
                   type='button'
+                  whileHover={{ scale: isCurrentMonth && !isFuture ? 1.05 : 1 }}
+                  whileTap={{ scale: isCurrentMonth && !isFuture ? 0.95 : 1 }}
                   className={cn(
-                    'relative h-10 flex items-center justify-center text-sm rounded-md',
-                    !isCurrentMonth && 'text-muted-foreground',
+                    'relative h-10 flex items-center justify-center text-sm rounded-md transition-colors',
+                    !isCurrentMonth && 'text-muted-foreground opacity-40',
                     isToday && 'border border-primary',
-                    isSelected && 'bg-primary/10',
+                    isSelected && 'bg-primary/10 font-medium',
                     dayLog &&
                       !dayLog.hasBleeding &&
                       'bg-green-100 dark:bg-green-900/30',
@@ -198,77 +242,156 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
                       )}
                     </div>
                   )}
-                </button>
+                </motion.button>
               );
             })}
           </div>
         </CardContent>
       </Card>
 
-      {selectedDay && (
-        <Card>
-          <CardHeader className='pb-2'>
-            <CardTitle className='text-center'>
-              {format(selectedDay, 'yyyy年MM月dd日 (eee)', { locale: ja })}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {selectedDayLog ? (
-              <div className='flex flex-col items-center justify-center p-4'>
-                <div className='flex items-center justify-center mb-2'>
-                  {selectedDayLog.hasBleeding ? (
-                    <div className='flex items-center text-red-500'>
-                      <Droplet className='mr-2 h-5 w-5' />
-                      <span>出血あり</span>
+      <AnimatePresence>
+        {selectedDay && !isFutureDate(selectedDay) && (
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+            transition={{ duration: 0.2 }}
+          >
+            <Card className='overflow-hidden shadow-lg border-0 rounded-xl'>
+              <CardHeader className='pb-2 pt-4 px-4 flex flex-row items-center justify-between'>
+                <CardTitle className='text-center text-base'>
+                  {format(selectedDay, 'yyyy年MM月dd日 (eee)', { locale: ja })}
+                </CardTitle>
+                <Button
+                  variant='ghost'
+                  size='icon'
+                  className='h-8 w-8 rounded-full'
+                  onClick={clearSelection}
+                >
+                  <X className='h-4 w-4' />
+                </Button>
+              </CardHeader>
+              <CardContent className='px-4 pb-4'>
+                {selectedDayLog ? (
+                  <div className='flex flex-col items-center justify-center p-2'>
+                    <div className='flex items-center justify-center mb-2'>
+                      {selectedDayLog.hasBleeding ? (
+                        <div className='flex items-center text-red-500'>
+                          <Droplet className='mr-2 h-5 w-5' />
+                          <span>出血あり</span>
+                        </div>
+                      ) : (
+                        <div className='flex items-center text-green-500'>
+                          <Check className='mr-2 h-5 w-5' />
+                          <span>正常に服用</span>
+                        </div>
+                      )}
                     </div>
-                  ) : (
-                    <div className='flex items-center text-green-500'>
-                      <Check className='mr-2 h-5 w-5' />
-                      <span>正常に服用</span>
+                    <div className='text-sm text-muted-foreground'>
+                      記録時間:{' '}
+                      {format(parseISO(selectedDayLog.createdAt), 'HH:mm')}
                     </div>
-                  )}
-                </div>
-                <div className='text-sm text-muted-foreground'>
-                  記録時間:{' '}
-                  {format(parseISO(selectedDayLog.createdAt), 'HH:mm')}
-                </div>
-              </div>
-            ) : (
-              <div className='text-center py-4'>
-                <div className='text-muted-foreground mb-4'>
-                  この日の記録はありません
-                </div>
-                <div className='flex items-center justify-center'>
-                  <Plus className='h-5 w-5 text-blue-500 mr-2' />
-                  <span className='font-medium'>記録を追加しますか？</span>
-                </div>
-              </div>
-            )}
-          </CardContent>
-          {!selectedDayLog && !isFutureDate(selectedDay) && (
-            <CardFooter className='flex justify-center gap-4 pt-0'>
-              <Button
-                variant='outline'
-                className='flex-1 bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 border-green-200 dark:border-green-800'
-                onClick={() => handleAddRecord(false)}
-                disabled={isPending}
-              >
-                <Check className='mr-2 h-4 w-4 text-green-500' />
-                正常に服用
-              </Button>
-              <Button
-                variant='outline'
-                className='flex-1 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 border-red-200 dark:border-red-800'
-                onClick={() => handleAddRecord(true)}
-                disabled={isPending}
-              >
-                <Droplet className='mr-2 h-4 w-4 text-red-500' />
-                出血あり
-              </Button>
-            </CardFooter>
-          )}
-        </Card>
-      )}
+
+                    <div className='grid grid-cols-2 gap-3 w-full mt-4'>
+                      <Button
+                        variant='outline'
+                        className={cn(
+                          'flex-1 border-2',
+                          !selectedDayLog.hasBleeding
+                            ? 'bg-green-100 border-green-300 dark:bg-green-900/30 dark:border-green-700'
+                            : 'border-green-200 dark:border-green-800/50 hover:border-green-300 dark:hover:border-green-700'
+                        )}
+                        onClick={() => handleAddRecord(false)}
+                        disabled={
+                          isPending ||
+                          (!selectedDayLog.hasBleeding && !isPending)
+                        }
+                      >
+                        {isPending && activeButton === 'normal' ? (
+                          <div className='h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2' />
+                        ) : (
+                          <Check className='mr-2 h-4 w-4 text-green-500' />
+                        )}
+                        正常に服用
+                      </Button>
+                      <Button
+                        variant='outline'
+                        className={cn(
+                          'flex-1 border-2',
+                          selectedDayLog.hasBleeding
+                            ? 'bg-red-100 border-red-300 dark:bg-red-900/30 dark:border-red-700'
+                            : 'border-red-200 dark:border-red-800/50 hover:border-red-300 dark:hover:border-red-700'
+                        )}
+                        onClick={() => handleAddRecord(true)}
+                        disabled={
+                          isPending ||
+                          (selectedDayLog.hasBleeding && !isPending)
+                        }
+                      >
+                        {isPending && activeButton === 'bleeding' ? (
+                          <div className='h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2' />
+                        ) : (
+                          <Droplet className='mr-2 h-4 w-4 text-red-500' />
+                        )}
+                        出血あり
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <div className='grid grid-cols-2 gap-3 w-full'>
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Button
+                        variant='outline'
+                        className={cn(
+                          'flex-1 h-14 w-full border-2',
+                          activeButton === 'normal'
+                            ? 'bg-green-100 border-green-300 dark:bg-green-900/30 dark:border-green-700'
+                            : 'border-green-200 dark:border-green-800/50 hover:border-green-300 dark:hover:border-green-700'
+                        )}
+                        onClick={() => handleAddRecord(false)}
+                        disabled={isPending}
+                      >
+                        {isPending && activeButton === 'normal' ? (
+                          <div className='h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2' />
+                        ) : (
+                          <Check className='mr-2 h-4 w-4 text-green-500' />
+                        )}
+                        正常に服用
+                      </Button>
+                    </motion.div>
+                    <motion.div
+                      whileHover={{ scale: 1.02 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <Button
+                        variant='outline'
+                        className={cn(
+                          'flex-1 h-14 w-full border-2',
+                          activeButton === 'bleeding'
+                            ? 'bg-red-100 border-red-300 dark:bg-red-900/30 dark:border-red-700'
+                            : 'border-red-200 dark:border-red-800/50 hover:border-red-300 dark:hover:border-red-700'
+                        )}
+                        onClick={() => handleAddRecord(true)}
+                        disabled={isPending}
+                      >
+                        {isPending && activeButton === 'bleeding' ? (
+                          <div className='h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin mr-2' />
+                        ) : (
+                          <Droplet className='mr-2 h-4 w-4 text-red-500' />
+                        )}
+                        出血あり
+                      </Button>
+                    </motion.div>
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       <div className='flex justify-center space-x-4'>
         <div className='flex items-center'>
