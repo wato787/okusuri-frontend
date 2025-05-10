@@ -1,6 +1,6 @@
 'use client';
 
-import { Calendar, Home, Settings } from 'lucide-react';
+import { Calendar, Home, PieChart, Settings } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -21,6 +21,11 @@ export function BottomNav() {
       name: 'カレンダー',
       href: '/calendar',
       icon: Calendar,
+    },
+    {
+      name: '統計',
+      href: '/stats',
+      icon: PieChart,
     },
     {
       name: '設定',
