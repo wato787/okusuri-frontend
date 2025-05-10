@@ -8,7 +8,7 @@ const Home = async () => {
     consecutiveBleedingDays: 0, // 連続出血日数
     isRestPeriod: false, // 休薬期間かどうか
     restDaysLeft: 0, // 休薬期間の残り日数
-    nextAction: '出血がなければ服用を続けてください', // 次のアクション
+    nextAction: '服用を続けてください', // 次のアクション
   };
 
   return (
