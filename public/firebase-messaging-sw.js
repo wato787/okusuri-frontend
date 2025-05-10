@@ -1,7 +1,3 @@
-// Give the service worker access to Firebase Messaging.
-// Note that you can only use Firebase Messaging here. Other Firebase libraries
-// are not available in the service worker.
-// Replace 10.13.2 with latest version of the Firebase JS SDK.
 importScripts(
 	"https://www.gstatic.com/firebasejs/10.13.2/firebase-app-compat.js",
 );
@@ -9,9 +5,6 @@ importScripts(
 	"https://www.gstatic.com/firebasejs/10.13.2/firebase-messaging-compat.js",
 );
 
-// Initialize the Firebase app in the service worker by passing in
-// your app's Firebase config object.
-// https://firebase.google.com/docs/web/setup#config-object
 firebase.initializeApp({
 	apiKey: "AIzaSyCQ_uI-RuoTzt0HE6-8Bdc1lsRpuAiyWRs",
 	authDomain: "okusuri-fcm.firebaseapp.com",
@@ -22,15 +15,27 @@ firebase.initializeApp({
 	measurementId: "G-QGPNCZTBCL",
 });
 
-// Retrieve an instance of Firebase Messaging so that it can handle background
-// messages.
 const messaging = firebase.messaging();
 
-// バックグラウンドメッセージの処理
-// 重複チェックを追加
+// 処理済みメッセージのIDを保存
+const processedMessageIds = new Set();
 let isHandlingMessage = false;
 
 messaging.onBackgroundMessage((payload) => {
+	console.log("バックグラウンドで受信したメッセージ:", payload);
+
+	// メッセージIDを取得（ペイロードの構造によって異なる場合があります）
+	const messageId =
+		payload.messageId ||
+		payload.data?.messageId ||
+		JSON.stringify(payload.notification); // IDがない場合、通知内容で代用
+
+	// 重複チェック
+	if (messageId && processedMessageIds.has(messageId)) {
+		console.log("すでに処理済みのメッセージです：", messageId);
+		return;
+	}
+
 	if (isHandlingMessage) {
 		console.log("メッセージ処理中のため、スキップします");
 		return;
@@ -38,12 +43,20 @@ messaging.onBackgroundMessage((payload) => {
 
 	isHandlingMessage = true;
 
-	console.log("バックグラウンドで受信したメッセージ:", payload);
+	// 処理済みとしてマーク
+	if (messageId) {
+		processedMessageIds.add(messageId);
+		// メモリ管理のため、一定時間後に削除
+		setTimeout(() => {
+			processedMessageIds.delete(messageId);
+		}, 300000); // 5分後に削除
+	}
 
 	const notificationTitle = payload.notification.title;
 	const notificationOptions = {
 		body: payload.notification.body,
 		icon: "/logo.png",
+		tag: messageId, // tagを設定すると同じtagの通知は上書きされる
 	};
 
 	self.registration
