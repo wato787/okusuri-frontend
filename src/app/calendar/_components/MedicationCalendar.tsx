@@ -1,7 +1,14 @@
 'use client';
 
+import { registerMedicationLog } from '@/app/(home)/action';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  Card,
+  CardContent,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
 import { cn } from '@/lib/utils';
 import {
   addMonths,
@@ -14,9 +21,18 @@ import {
   subMonths,
 } from 'date-fns';
 import { ja } from 'date-fns/locale';
-import { Check, ChevronLeft, ChevronRight, Droplet } from 'lucide-react';
-import { useState } from 'react';
-import type { MedicationLog } from '../schema';
+import { Check, ChevronLeft, ChevronRight, Droplet, Plus } from 'lucide-react';
+import { useState, useTransition } from 'react';
+
+import toast from 'react-hot-toast';
+
+export type MedicationLog = {
+  id: number;
+  createdAt: string;
+  updatedAt: string;
+  userId: string;
+  hasBleeding: boolean;
+};
 
 type MedicationCalendarProps = {
   logs: MedicationLog[];
@@ -25,6 +41,7 @@ type MedicationCalendarProps = {
 export function MedicationCalendar({ logs }: MedicationCalendarProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDay, setSelectedDay] = useState<Date | undefined>(undefined);
+  const [isPending, startTransition] = useTransition();
 
   // 選択された日付のログを取得
   const selectedDayLog = selectedDay
@@ -67,8 +84,37 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
     return logs.find((log) => isSameDay(parseISO(log.createdAt), day));
   };
 
+  // 記録を追加する処理
+  const handleAddRecord = (hasBleeding: boolean) => {
+    if (!selectedDay) return;
+
+    startTransition(async () => {
+      try {
+        // 選択された日付の0時0分0秒に設定
+        const recordDate = new Date(selectedDay);
+        recordDate.setHours(0, 0, 0, 0);
+
+        await registerMedicationLog({
+          hasBleeding,
+        });
+
+        toast.success('記録が完了しました');
+      } catch (error) {
+        console.error('記録の追加に失敗しました', error);
+        toast.error('記録の追加に失敗しました');
+      }
+    });
+  };
+
   // 曜日の配列
   const weekdays = ['日', '月', '火', '水', '木', '金', '土'];
+
+  // 未来の日付かどうかを判定
+  const isFutureDate = (date: Date) => {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    return date > today;
+  };
 
   return (
     <div className='space-y-6'>
@@ -121,6 +167,7 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
               const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
               const isToday = isSameDay(day, new Date());
               const isSelected = selectedDay && isSameDay(day, selectedDay);
+              const isFuture = isFutureDate(day);
 
               return (
                 <button
@@ -134,16 +181,18 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
                     dayLog &&
                       !dayLog.hasBleeding &&
                       'bg-green-100 dark:bg-green-900/30',
-                    dayLog?.hasBleeding && 'bg-red-100 dark:bg-red-900/30'
+                    dayLog?.hasBleeding && 'bg-red-100 dark:bg-red-900/30',
+                    isFuture && 'opacity-50 cursor-not-allowed'
                   )}
-                  onClick={() => handleDayClick(day)}
+                  onClick={() => !isFuture && handleDayClick(day)}
+                  disabled={isFuture}
                   aria-label={`${format(day, 'yyyy年MM月dd日')}${
                     dayLog
                       ? dayLog.hasBleeding
                         ? '、出血あり'
                         : '、正常に服用'
                       : ''
-                  }`}
+                  }${isFuture ? '、未来の日付' : ''}`}
                   aria-pressed={isSelected}
                 >
                   <span>{format(day, 'd')}</span>
@@ -165,7 +214,7 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
 
       {selectedDay && (
         <Card>
-          <CardHeader className='-mb-3'>
+          <CardHeader className='pb-2'>
             <CardTitle className='text-center'>
               {format(selectedDay, 'yyyy年MM月dd日 (eee)', { locale: ja })}
             </CardTitle>
@@ -192,11 +241,39 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
                 </div>
               </div>
             ) : (
-              <div className='text-center py-4 text-muted-foreground'>
-                この日の記録はありません
+              <div className='text-center py-4'>
+                <div className='text-muted-foreground mb-4'>
+                  この日の記録はありません
+                </div>
+                <div className='flex items-center justify-center'>
+                  <Plus className='h-5 w-5 text-blue-500 mr-2' />
+                  <span className='font-medium'>記録を追加しますか？</span>
+                </div>
               </div>
             )}
           </CardContent>
+          {!selectedDayLog && !isFutureDate(selectedDay) && (
+            <CardFooter className='flex justify-center gap-4 pt-0'>
+              <Button
+                variant='outline'
+                className='flex-1 bg-green-100 hover:bg-green-200 dark:bg-green-900/30 dark:hover:bg-green-900/50 border-green-200 dark:border-green-800'
+                onClick={() => handleAddRecord(false)}
+                disabled={isPending}
+              >
+                <Check className='mr-2 h-4 w-4 text-green-500' />
+                正常に服用
+              </Button>
+              <Button
+                variant='outline'
+                className='flex-1 bg-red-100 hover:bg-red-200 dark:bg-red-900/30 dark:hover:bg-red-900/50 border-red-200 dark:border-red-800'
+                onClick={() => handleAddRecord(true)}
+                disabled={isPending}
+              >
+                <Droplet className='mr-2 h-4 w-4 text-red-500' />
+                出血あり
+              </Button>
+            </CardFooter>
+          )}
         </Card>
       )}
 
