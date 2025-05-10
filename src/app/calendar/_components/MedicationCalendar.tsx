@@ -19,7 +19,7 @@ import { useState, useTransition } from 'react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { registerMedicationLog } from '@/app/(home)/action';
-import { MedicationLog } from '../schema';
+import type { MedicationLog } from '../schema';
 
 type MedicationCalendarProps = {
   logs: MedicationLog[];
