@@ -19,14 +19,7 @@ import { useState, useTransition } from 'react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
 import { registerMedicationLog } from '@/app/(home)/action';
-
-export type MedicationLog = {
-  id: number;
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
-  hasBleeding: boolean;
-};
+import { MedicationLog } from '../schema';
 
 type MedicationCalendarProps = {
   logs: MedicationLog[];
@@ -100,32 +93,6 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
         });
 
         toast.success('記録が完了しました');
-
-        // 送信完了後、少し待ってからボタンのアクティブ状態をリセット
-        setTimeout(() => {
-          // ログを更新するために、ページをリロードする代わりに
-          // ローカルのログ配列を更新する（実際のアプリでは適切なデータ更新方法を使用）
-          const newLog = {
-            id: Date.now(),
-            createdAt: recordDate.toISOString(),
-            updatedAt: recordDate.toISOString(),
-            userId: 'current-user',
-            hasBleeding,
-          };
-
-          // 既存のログを更新または新しいログを追加
-          const existingLogIndex = logs.findIndex((log) =>
-            isSameDay(parseISO(log.createdAt), recordDate)
-          );
-
-          if (existingLogIndex >= 0) {
-            logs[existingLogIndex] = newLog;
-          } else {
-            logs.push(newLog);
-          }
-
-          setActiveButton(null);
-        }, 1000);
       } catch (error) {
         console.error('記録の追加に失敗しました', error);
         toast.error('記録の追加に失敗しました');
