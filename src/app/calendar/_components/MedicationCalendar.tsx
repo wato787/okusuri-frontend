@@ -25,14 +25,7 @@ import { Check, ChevronLeft, ChevronRight, Droplet, Plus } from 'lucide-react';
 import { useState, useTransition } from 'react';
 
 import toast from 'react-hot-toast';
-
-export type MedicationLog = {
-  id: number;
-  createdAt: string;
-  updatedAt: string;
-  userId: string;
-  hasBleeding: boolean;
-};
+import type { MedicationLog } from '../schema';
 
 type MedicationCalendarProps = {
   logs: MedicationLog[];
