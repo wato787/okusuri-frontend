@@ -1,11 +1,23 @@
 import { Card, CardContent } from '@/components/ui/card';
-import { Clock, PauseCircle } from 'lucide-react';
+import { Progress } from '@/components/ui/progress';
+import { Clock, Info, PauseCircle } from 'lucide-react';
 
 type RestPeriodStatusProps = {
-  bleedingDays: number; // 出血日数
+  totalDays: number; // 飲み始めてからの総日数
+  bleedingDays: number; // 連続出血日数
+  restDaysLeft: number; // 休薬期間の残り日数
+  totalRestDays: number; // 休薬期間の合計日数（通常4日）
 };
 
-export function RestPeriodStatus({ bleedingDays }: RestPeriodStatusProps) {
+export function RestPeriodStatus({
+  totalDays,
+  bleedingDays,
+  restDaysLeft,
+  totalRestDays = 4,
+}: RestPeriodStatusProps) {
+  // 休薬期間の進捗
+  const restProgress = ((totalRestDays - restDaysLeft) / totalRestDays) * 100;
+
   return (
     <Card className='overflow-hidden shadow-lg border-0 rounded-xl'>
       <div className='py-4 px-5 bg-gradient-to-r from-amber-500 to-amber-400 text-white font-medium'>
@@ -15,18 +27,56 @@ export function RestPeriodStatus({ bleedingDays }: RestPeriodStatusProps) {
             <span className='text-lg'>休薬期間中</span>
           </div>
           <div className='text-sm bg-white/20 px-3 py-1 rounded-full'>
-            {bleedingDays}日目
+            残り{restDaysLeft}日
           </div>
         </div>
       </div>
 
       <CardContent className='p-5'>
         <div className='space-y-5'>
-          <div className='flex items-center mt-2 bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg'>
+          <div className='grid grid-cols-2 gap-4'>
+            <div className='bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg'>
+              <div className='text-sm text-muted-foreground flex items-center mb-1'>
+                <Info className='mr-2 h-4 w-4' />
+                <span>飲み始めてから</span>
+              </div>
+              <div className='text-xl font-bold'>{totalDays}日目</div>
+            </div>
+
+            <div className='bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg'>
+              <div className='text-sm text-muted-foreground flex items-center mb-1'>
+                <PauseCircle className='mr-2 h-4 w-4' />
+                <span>休薬理由</span>
+              </div>
+              <div className='text-xl font-bold'>{bleedingDays}日連続出血</div>
+            </div>
+          </div>
+
+          <div className='space-y-2'>
+            <div className='flex items-center justify-between'>
+              <div className='text-sm text-muted-foreground'>
+                休薬期間の進捗
+              </div>
+              <div className='text-sm font-medium'>
+                {totalRestDays - restDaysLeft}/{totalRestDays}日
+              </div>
+            </div>
+            <Progress value={restProgress} className='h-2' />
+            <div className='text-xs text-muted-foreground text-center mt-1'>
+              休薬期間終了後、連続服用日数はリセットされます
+            </div>
+          </div>
+
+          <div className='flex items-center bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg'>
             <Clock className='mr-3 h-5 w-5 text-blue-500 flex-shrink-0' />
-            <span className='font-medium'>
-              出血が止まるまで休薬を続けてください
-            </span>
+            <div>
+              <p className='font-medium'>休薬期間を完了してください</p>
+              <p className='text-xs mt-1'>
+                {restDaysLeft === 0
+                  ? '明日から服用を再開できます。連続服用日数は1日目からカウントされます。'
+                  : `あと${restDaysLeft}日の休薬期間が必要です。`}
+              </p>
+            </div>
           </div>
         </div>
       </CardContent>
