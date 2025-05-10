@@ -91,7 +91,7 @@ export function MedicationTracker({
                 {isPending && activeButton === 'bleeding' ? (
                   <>
                     <div className='absolute inset-0 flex items-center justify-center'>
-                      <div className='h-6 w-6 border-3 border-white border-t-transparent rounded-full animate-spin'></div>
+                      <div className='h-6 w-6 border-3 border-white border-t-transparent rounded-full animate-spin' />
                     </div>
                     <span className='opacity-0'>出血あり</span>
                   </>
@@ -119,7 +119,7 @@ export function MedicationTracker({
                 {isPending && activeButton === 'normal' ? (
                   <>
                     <div className='absolute inset-0 flex items-center justify-center'>
-                      <div className='h-6 w-6 border-3 border-white border-t-transparent rounded-full animate-spin'></div>
+                      <div className='h-6 w-6 border-3 border-white border-t-transparent rounded-full animate-spin' />
                     </div>
                     <span className='opacity-0'>出血なし</span>
                   </>
