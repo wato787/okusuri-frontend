@@ -3,25 +3,21 @@
 import { Card, CardContent } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
 import { cn } from '@/lib/utils';
-import { AlertCircle, Calendar, Clock, Info, PlayCircle } from 'lucide-react';
+import { AlertCircle, Clock, PauseCircle, Pill } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 type MedicationStatusProps = {
-  totalDays: number; // 飲み始めてからの総日数
-  consecutiveDays: number; // 出血なしで連続服用した日数
+  currentStreak: number; // 現在の服用日数
   consecutiveBleedingDays: number; // 連続出血日数
   isRestPeriod: boolean; // 休薬期間中かどうか
   restDaysLeft: number; // 休薬期間の残り日数（4日間の場合、残り何日か）
-  nextAction: string; // 次のアクション
 };
 
 export function MedicationStatus({
-  totalDays,
-  consecutiveDays,
+  currentStreak,
   consecutiveBleedingDays,
   isRestPeriod,
   restDaysLeft,
-  nextAction,
 }: MedicationStatusProps) {
   // 休薬期間の進捗（4日間中何日経過したか）
   const restProgress = isRestPeriod ? ((4 - restDaysLeft) / 4) * 100 : 0;
@@ -45,43 +41,31 @@ export function MedicationStatus({
             <div className='flex items-center'>
               {isRestPeriod ? (
                 <span className='text-lg flex items-center'>
-                  <Info className='mr-2 h-5 w-5' />
+                  <PauseCircle className='mr-2 h-5 w-5' />
                   休薬期間中
                 </span>
               ) : (
                 <span className='text-lg flex items-center'>
-                  <PlayCircle className='mr-2 h-5 w-5' />
-                  服用期間中
+                  <Pill className='mr-2 h-5 w-5' />
+                  服用継続中
                 </span>
               )}
             </div>
             <div className='text-sm bg-white/20 px-3 py-1 rounded-full'>
-              {isRestPeriod
-                ? `残り${restDaysLeft}日`
-                : `${consecutiveDays}日目`}
+              {isRestPeriod ? `残り${restDaysLeft}日` : `${currentStreak}日目`}
             </div>
           </div>
         </div>
 
         <CardContent className='p-5'>
           <div className='space-y-5'>
-            <div className='grid grid-cols-2 gap-4'>
-              <div className='bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg'>
-                <div className='text-sm text-muted-foreground flex items-center mb-1'>
-                  <Calendar className='mr-2 h-4 w-4' />
-                  <span>飲み始めてから</span>
-                </div>
-                <div className='text-xl font-bold'>{totalDays}日目</div>
+            <div className='bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg'>
+              <div className='text-sm text-muted-foreground flex items-center mb-1'>
+                <Pill className='mr-2 h-4 w-4' />
+                <span>服用日数</span>
               </div>
-
-              <div className='bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg'>
-                <div className='text-sm text-muted-foreground flex items-center mb-1'>
-                  <PlayCircle className='mr-2 h-4 w-4' />
-                  <span>連続服用</span>
-                </div>
-                <div className='text-xl font-bold'>
-                  {isRestPeriod ? '休薬中' : `${consecutiveDays}日目`}
-                </div>
+              <div className='text-2xl font-bold'>
+                {isRestPeriod ? '休薬中' : `${currentStreak}日目`}
               </div>
             </div>
 
@@ -97,7 +81,7 @@ export function MedicationStatus({
                 </div>
                 <Progress value={restProgress} className='h-2' />
                 <div className='text-xs text-muted-foreground text-center mt-1'>
-                  休薬期間終了後、連続服用日数はリセットされます
+                  休薬期間終了後、服用日数は1日目からリセットされます
                 </div>
               </div>
             )}
@@ -124,7 +108,7 @@ export function MedicationStatus({
                   </p>
                   {consecutiveBleedingDays >= 3 && (
                     <p className='text-xs mt-1'>
-                      3日連続で出血がある場合は、4日間の休薬期間に入ってください。休薬後は連続服用日数がリセットされます。
+                      3日連続で出血がある場合は、4日間の休薬期間に入ってください。休薬後は服用日数が1日目からリセットされます。
                     </p>
                   )}
                 </div>
@@ -133,7 +117,13 @@ export function MedicationStatus({
 
             <div className='flex items-center bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg'>
               <Clock className='mr-3 h-5 w-5 text-blue-500 flex-shrink-0' />
-              <span className='font-medium'>{nextAction}</span>
+              <span className='font-medium'>
+                {isRestPeriod
+                  ? `あと${restDaysLeft}日の休薬期間を続けてください`
+                  : consecutiveBleedingDays >= 3
+                  ? '休薬期間に入ることをお勧めします'
+                  : '毎日服用を続けてください'}
+              </span>
             </div>
           </div>
         </CardContent>
