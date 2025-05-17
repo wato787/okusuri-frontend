@@ -35,7 +35,7 @@ export function NotificationSetting({ notificationSetting }: Props) {
         }
 
         // FCMトークンを取得
-        const fcmToken = await getToken(messaging, {
+        const fcmToken = await getToken(messaging!, {
           vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
         });
 
