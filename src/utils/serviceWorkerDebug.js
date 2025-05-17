@@ -34,7 +34,7 @@ export async function debugServiceWorker() {
     }
     
     // メッセージングの確認
-    if (window.firebase && window.firebase.messaging) {
+    if (window.firebase?.messaging) {
       console.log("Firebase Messagingが初期化されています");
     } else {
       console.log("Firebase Messagingが初期化されていないか、利用できません");
