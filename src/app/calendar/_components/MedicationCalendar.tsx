@@ -18,7 +18,7 @@ import { Check, ChevronLeft, ChevronRight, Droplet, X } from 'lucide-react';
 import { useState, useTransition } from 'react';
 import toast from 'react-hot-toast';
 import { motion, AnimatePresence } from 'framer-motion';
-import { registerMedicationLog } from '@/app/(home)/action';
+import { registerMedicationLog, updateMedicationLog } from '@/app/(home)/action';
 import type { MedicationLog } from '../schema';
 
 type MedicationCalendarProps = {
@@ -75,7 +75,7 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
     return logs.find((log) => isSameDay(parseISO(log.createdAt), day));
   };
 
-  // 記録を追加する処理
+  // 記録を追加または更新する処理
   const handleAddRecord = (hasBleeding: boolean) => {
     if (!selectedDay) return;
 
@@ -88,14 +88,21 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
         const recordDate = new Date(selectedDay);
         recordDate.setHours(0, 0, 0, 0);
 
-        await registerMedicationLog({
-          hasBleeding,
-        });
-
-        toast.success('記録が完了しました');
+        // 既存のログがあれば更新、なければ新規登録
+        if (selectedDayLog) {
+          await updateMedicationLog(selectedDayLog.id, {
+            hasBleeding,
+          });
+          toast.success('記録を更新しました');
+        } else {
+          await registerMedicationLog({
+            hasBleeding,
+          });
+          toast.success('記録を登録しました');
+        }
       } catch (error) {
-        console.error('記録の追加に失敗しました', error);
-        toast.error('記録の追加に失敗しました');
+        console.error('記録の処理に失敗しました', error);
+        toast.error('記録の処理に失敗しました');
         setActiveButton(null);
       }
     });
