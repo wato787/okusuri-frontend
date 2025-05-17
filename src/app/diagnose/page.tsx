@@ -2,7 +2,7 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { messaging } from '@/lib/firebase';
+import { initializeMessaging, messaging } from '@/lib/firebase';
 import {
   debugServiceWorker,
   unregisterAllServiceWorkers,
@@ -12,19 +12,51 @@ import { useState } from 'react';
 import toast from 'react-hot-toast';
 
 export default function DiagnosePage() {
-  const [isLoading, setIsLoading] = useState(false);
-  const [diagnosticResults, setDiagnosticResults] = useState<string>('');
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [diagnosticResults, setDiagnosticResults] = useState<string | null>(
+    null
+  );
 
   const runDiagnostics = async () => {
     setIsLoading(true);
-    setDiagnosticResults('');
+    setDiagnosticResults(null);
 
     try {
       console.clear(); // コンソールをクリアして読みやすくする
+
+      // Firebase Messagingの初期化ステータスを確認
+      const currentMessaging = await initializeMessaging();
+      console.log(
+        'Firebase Messagingのステータス:',
+        currentMessaging ? '初期化完了' : '未初期化'
+      );
+
+      // サービスワーカーの診断
       await debugServiceWorker();
-      toast.success('診断が完了しました。ブラウザのコンソールを確認してください');
-      setDiagnosticResults('診断が完了しました。ブラウザのコンソールログを確認してください。');
-    } catch (error) {
+
+      // IndexedDBのデータベースを確認
+      try {
+        const databases = await window.indexedDB.databases();
+        console.log('IndexedDBデータベース一覧:', databases);
+      } catch (e) {
+        console.log('IndexedDBデータベース一覧の取得に失敗:', e);
+      }
+
+      // キャッシュの確認
+      try {
+        const caches = await window.caches.keys();
+        console.log('キャッシュ一覧:', caches);
+      } catch (e) {
+        console.log('キャッシュ一覧の取得に失敗:', e);
+      }
+
+      toast.success(
+        '診断が完了しました。ブラウザのコンソールを確認してください'
+      );
+      setDiagnosticResults(
+        '診断が完了しました。ブラウザのコンソールログを確認してください。'
+      );
+    } catch (error: any) {
       console.error('診断中にエラーが発生しました:', error);
       toast.error('診断中にエラーが発生しました');
       setDiagnosticResults(`エラー: ${error.message}`);
@@ -49,7 +81,7 @@ export default function DiagnosePage() {
           '一部のサービスワーカーの登録解除に失敗しました。コンソールを確認してください。'
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('登録解除中にエラーが発生しました:', error);
       toast.error('登録解除中にエラーが発生しました');
       setDiagnosticResults(`エラー: ${error.message}`);
@@ -64,9 +96,7 @@ export default function DiagnosePage() {
       console.clear();
       const newToken = await resetFirebaseMessagingToken(messaging);
       if (newToken) {
-        toast.success(
-          'Firebase Messagingトークンのリセットに成功しました'
-        );
+        toast.success('Firebase Messagingトークンのリセットに成功しました');
         setDiagnosticResults(
           `Firebase Messagingトークンのリセットに成功しました。新しいトークン: ${newToken.substring(
             0,
@@ -79,9 +109,105 @@ export default function DiagnosePage() {
           'トークンのリセットに失敗しました。コンソールを確認してください。'
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       console.error('トークンリセット中にエラーが発生しました:', error);
       toast.error('トークンリセット中にエラーが発生しました');
+      setDiagnosticResults(`エラー: ${error.message}`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleCleanupStorage = async () => {
+    setIsLoading(true);
+    try {
+      console.clear();
+      console.log('ブラウザのストレージをクリーンアップします...');
+
+      // IndexedDBのクリーンアップ
+      try {
+        const databases = await window.indexedDB.databases();
+        console.log('削除対象のIndexedDBデータベース:', databases);
+
+        for (const db of databases) {
+          if (
+            db.name &&
+            (db.name.includes('fcm') ||
+              db.name.includes('firebase') ||
+              db.name.includes('notification'))
+          ) {
+            console.log(`データベースを削除します: ${db.name}`);
+            await window.indexedDB.deleteDatabase(db.name);
+            console.log(`データベース ${db.name} を削除しました`);
+          }
+        }
+      } catch (e) {
+        console.error('IndexedDBのクリーンアップ中にエラー:', e);
+      }
+
+      // キャッシュのクリーンアップ
+      try {
+        const cacheKeys = await window.caches.keys();
+        console.log('削除対象のキャッシュ:', cacheKeys);
+
+        for (const key of cacheKeys) {
+          if (
+            key.includes('fcm') ||
+            key.includes('firebase') ||
+            key.includes('notification')
+          ) {
+            console.log(`キャッシュを削除します: ${key}`);
+            await window.caches.delete(key);
+            console.log(`キャッシュ ${key} を削除しました`);
+          }
+        }
+      } catch (e) {
+        console.error('キャッシュのクリーンアップ中にエラー:', e);
+      }
+
+      // ローカルストレージとセッションストレージのクリーンアップ
+      try {
+        for (let i = 0; i < localStorage.length; i++) {
+          const key = localStorage.key(i);
+          if (
+            key &&
+            (key.includes('fcm') ||
+              key.includes('firebase') ||
+              key.includes('notification'))
+          ) {
+            console.log(`ローカルストレージのアイテムを削除します: ${key}`);
+            localStorage.removeItem(key);
+          }
+        }
+
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const key = sessionStorage.key(i);
+          if (
+            key &&
+            (key.includes('fcm') ||
+              key.includes('firebase') ||
+              key.includes('notification'))
+          ) {
+            console.log(`セッションストレージのアイテムを削除します: ${key}`);
+            sessionStorage.removeItem(key);
+          }
+        }
+      } catch (e) {
+        console.error('ストレージのクリーンアップ中にエラー:', e);
+      }
+
+      toast.success('ブラウザストレージのクリーンアップが完了しました');
+      setDiagnosticResults(
+        'ブラウザストレージのクリーンアップが完了しました。ページを再読み込みしてください。'
+      );
+
+      // 2秒後にページをリロード
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+    } catch (error: any) {
+      console.error('ストレージクリーンアップ中にエラーが発生しました:', error);
+      toast.error('ストレージクリーンアップ中にエラーが発生しました');
       setDiagnosticResults(`エラー: ${error.message}`);
     } finally {
       setIsLoading(false);
@@ -108,9 +234,7 @@ export default function DiagnosePage() {
 
       toast.success('テスト通知を送信しました');
     } else {
-      toast.error(
-        '通知の権限がありません。通知設定から許可してください。'
-      );
+      toast.error('通知の権限がありません。通知設定から許可してください。');
     }
   };
 
@@ -154,6 +278,15 @@ export default function DiagnosePage() {
               className='w-full'
             >
               FCMトークンをリセット
+            </Button>
+
+            <Button
+              variant='outline'
+              onClick={handleCleanupStorage}
+              disabled={isLoading}
+              className='w-full'
+            >
+              全ストレージをクリーンアップ
             </Button>
 
             <Button
