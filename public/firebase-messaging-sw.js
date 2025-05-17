@@ -17,51 +17,92 @@ firebase.initializeApp({
 
 const messaging = firebase.messaging();
 
-// 処理済みメッセージのIDを保存
-const processedMessageIds = new Set();
-let isHandlingMessage = false;
+// 処理済みメッセージのIDを保存するためのキャッシュ
+const CACHE_NAME = 'notification-cache';
 
-messaging.onBackgroundMessage((payload) => {
-	console.log("バックグラウンドで受信したメッセージ:", payload);
+// メッセージIDの取得関数
+function getMessageId(payload) {
+  return payload.messageId || 
+         payload.data?.messageId || 
+         (payload.notification ? `${payload.notification.title}-${payload.notification.body}` : null) || 
+         JSON.stringify(payload); // 最終手段
+}
 
-	// メッセージIDを取得（ペイロードの構造によって異なる場合があります）
-	const messageId =
-		payload.messageId ||
-		payload.data?.messageId ||
-		JSON.stringify(payload.notification); // IDがない場合、通知内容で代用
+// キャッシュにメッセージIDを保存
+async function saveProcessedMessageId(messageId) {
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    const response = new Response(JSON.stringify({ processed: true, timestamp: Date.now() }));
+    await cache.put(`/message/${messageId}`, response);
+    
+    // 古いキャッシュをクリーンアップ (5分以上前のエントリを削除)
+    cleanupCache();
+  } catch (error) {
+    console.error('キャッシュの保存に失敗しました:', error);
+  }
+}
 
-	// 重複チェック
-	if (messageId && processedMessageIds.has(messageId)) {
-		console.log("すでに処理済みのメッセージです：", messageId);
-		return;
-	}
+// キャッシュからメッセージIDを確認
+async function checkIfMessageProcessed(messageId) {
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    const response = await cache.match(`/message/${messageId}`);
+    return response !== undefined;
+  } catch (error) {
+    console.error('キャッシュの確認に失敗しました:', error);
+    return false;
+  }
+}
 
-	if (isHandlingMessage) {
-		console.log("メッセージ処理中のため、スキップします");
-		return;
-	}
+// 古いキャッシュをクリーンアップ
+async function cleanupCache() {
+  try {
+    const cache = await caches.open(CACHE_NAME);
+    const keys = await cache.keys();
+    const now = Date.now();
+    const fiveMinutes = 5 * 60 * 1000;
+    
+    for (const request of keys) {
+      const response = await cache.match(request);
+      const data = await response.json();
+      
+      if (now - data.timestamp > fiveMinutes) {
+        await cache.delete(request);
+      }
+    }
+  } catch (error) {
+    console.error('キャッシュのクリーンアップに失敗しました:', error);
+  }
+}
 
-	isHandlingMessage = true;
+// バックグラウンドメッセージの処理
+messaging.onBackgroundMessage(async (payload) => {
+  console.log("バックグラウンドで受信したメッセージ:", payload);
 
-	// 処理済みとしてマーク
-	if (messageId) {
-		processedMessageIds.add(messageId);
-		// メモリ管理のため、一定時間後に削除
-		setTimeout(() => {
-			processedMessageIds.delete(messageId);
-		}, 300000); // 5分後に削除
-	}
+  const messageId = getMessageId(payload);
+  if (!messageId) {
+    console.warn('メッセージIDが取得できませんでした。処理をスキップします。');
+    return;
+  }
 
-	const notificationTitle = payload.notification.title;
-	const notificationOptions = {
-		body: payload.notification.body,
-		icon: "/logo.png",
-		tag: messageId, // tagを設定すると同じtagの通知は上書きされる
-	};
+  // 重複チェック
+  const isProcessed = await checkIfMessageProcessed(messageId);
+  if (isProcessed) {
+    console.log("すでに処理済みのメッセージです：", messageId);
+    return;
+  }
 
-	self.registration
-		.showNotification(notificationTitle, notificationOptions)
-		.finally(() => {
-			isHandlingMessage = false;
-		});
+  // メッセージを処理済みとしてマーク
+  await saveProcessedMessageId(messageId);
+
+  // 通知を表示
+  const notificationTitle = payload.notification.title;
+  const notificationOptions = {
+    body: payload.notification.body,
+    icon: "/logo.png",
+    tag: messageId, // 同じtagの通知は上書きされる
+  };
+
+  await self.registration.showNotification(notificationTitle, notificationOptions);
 });
+
