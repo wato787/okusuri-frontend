@@ -77,23 +77,36 @@ async function cleanupCache() {
 
 // バックグラウンドメッセージの処理
 messaging.onBackgroundMessage(async (payload) => {
-  console.log("バックグラウンドで受信したメッセージ:", payload);
+  const timestamp = new Date().toLocaleTimeString();
+  console.log(`===== 通知受信 [${timestamp}] =====`);
+  console.log("ペイロード全体:", payload);
+  console.log("通知内容:", payload.notification);
+  console.log("データ:", payload.data);
 
+  // メッセージIDの取得とログ出力
   const messageId = getMessageId(payload);
+  console.log("生成されたメッセージID:", messageId);
+  
   if (!messageId) {
     console.warn('メッセージIDが取得できませんでした。処理をスキップします。');
     return;
   }
 
   // 重複チェック
+  console.log("キャッシュで重複チェック中...");
   const isProcessed = await checkIfMessageProcessed(messageId);
+  
   if (isProcessed) {
-    console.log("すでに処理済みのメッセージです：", messageId);
+    console.log("キャッシュチェック結果: すでに処理済みのメッセージです");
+    console.log(`===== 通知スキップ完了 [${new Date().toLocaleTimeString()}] =====`);
     return;
   }
+  console.log("キャッシュチェック結果: 新規メッセージです");
 
   // メッセージを処理済みとしてマーク
+  console.log("メッセージをキャッシュに保存中...");
   await saveProcessedMessageId(messageId);
+  console.log("メッセージを処理済みとしてキャッシュに保存しました");
 
   // 通知を表示
   const notificationTitle = payload.notification.title;
@@ -101,8 +114,21 @@ messaging.onBackgroundMessage(async (payload) => {
     body: payload.notification.body,
     icon: "/logo.png",
     tag: messageId, // 同じtagの通知は上書きされる
+    data: {
+      messageId: messageId,
+      timestamp: Date.now(),
+      payloadData: payload.data
+    }
   };
 
-  await self.registration.showNotification(notificationTitle, notificationOptions);
+  console.log("通知を表示します:", { タイトル: notificationTitle, オプション: notificationOptions });
+  try {
+    await self.registration.showNotification(notificationTitle, notificationOptions);
+    console.log("通知の表示に成功しました");
+  } catch (error) {
+    console.error("通知の表示中にエラーが発生しました:", error);
+  }
+  
+  console.log(`===== 通知表示完了 [${new Date().toLocaleTimeString()}] =====`);
 });
 
