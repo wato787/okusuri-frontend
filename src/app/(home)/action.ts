@@ -14,6 +14,7 @@ export const registerMedicationLog = async (req: {
 	}
 
 	revalidateTag("medication-log");
+	revalidateTag("medication-status"); // 服薬ステータスも更新
 	return {
 		success: true,
 	};
