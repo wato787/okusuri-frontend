@@ -1,23 +1,29 @@
 import { MedicationStatus } from './_components/MedicationStatus';
 import { MedicationTracker } from './_components/MedicationTracker';
 import { RestPeriodStatus } from './_components/RestPeriodStatus';
+import { getMedicationStatus } from '../medication/fetcher';
 
 const Home = async () => {
-  // ダミーデータ - 実際のアプリでは状態管理やAPIから取得
-  const medicationData = {
-    currentStreak: 12, // 現在の服用日数
-    consecutiveBleedingDays: 0, // 連続出血日数
-    isRestPeriod: false, // 休薬期間中かどうか
-    restDaysLeft: 0, // 休薬期間の残り日数
+  // 実際のデータをAPIから取得
+  const medicationData = await getMedicationStatus();
+
+  // APIからデータが取得できなかった場合はデフォルト値を使用
+  const defaultData = {
+    currentStreak: 0,
+    consecutiveBleedingDays: 0,
+    isRestPeriod: false,
+    restDaysLeft: 0,
   };
 
+  const data = medicationData || defaultData;
+
   // 休薬期間中の場合は別のコンポーネントを表示
-  if (medicationData.isRestPeriod) {
+  if (data.isRestPeriod) {
     return (
       <div className='container max-w-md mx-auto pt-6 pb-24 px-4'>
         <RestPeriodStatus
-          bleedingDays={3} // 3日連続出血で休薬期間に入った
-          restDaysLeft={medicationData.restDaysLeft}
+          bleedingDays={data.consecutiveBleedingDays}
+          restDaysLeft={data.restDaysLeft}
           totalRestDays={4}
         />
 
@@ -31,10 +37,10 @@ const Home = async () => {
   return (
     <div className='container max-w-md mx-auto pt-6 pb-24 px-4'>
       <MedicationStatus
-        currentStreak={medicationData.currentStreak}
-        consecutiveBleedingDays={medicationData.consecutiveBleedingDays}
-        isRestPeriod={medicationData.isRestPeriod}
-        restDaysLeft={medicationData.restDaysLeft}
+        currentStreak={data.currentStreak}
+        consecutiveBleedingDays={data.consecutiveBleedingDays}
+        isRestPeriod={data.isRestPeriod}
+        restDaysLeft={data.restDaysLeft}
       />
 
       <div className='mt-6'>
