@@ -25,13 +25,21 @@ export function NotificationSetting({ notificationSetting }: Props) {
   const handleNotificationSetting = () => {
     startTransition(async () => {
       try {
+        // 通知許可を取得
+        const permission = await Notification.requestPermission();
+        const isEnabled = permission === 'granted';
+
+        if (!isEnabled) {
+          toast.error('通知の許可が必要です');
+          return;
+        }
+
+        // FCMトークンを取得
         const fcmToken = await getToken(messaging, {
           vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
         });
 
-        const permission = await Notification.requestPermission();
-        const isEnabled = permission === 'granted';
-
+        // データを検証
         const validatedFields = registerNotificationSettingSchama.safeParse({
           fcmToken,
           isEnabled,
@@ -44,6 +52,7 @@ export function NotificationSetting({ notificationSetting }: Props) {
           return;
         }
 
+        // 設定を登録
         const res = await registerNotificationSetting(validatedFields.data);
 
         if (!res.success) {
