@@ -1,6 +1,5 @@
-import { get, post, patch } from "@/utils/apiBase";
-import { BaseResponse } from "@/utils/apiBase";
-import { MedicationLog, MedicationLogRequest } from "./schema";
+import { get, } from "@/utils/apiBase";
+import type { MedicationLog, } from "./schema";
 
 /**
  * 服薬ログ一覧を取得する関数
