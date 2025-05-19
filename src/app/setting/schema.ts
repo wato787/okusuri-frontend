@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 export const registerNotificationSettingSchama = z.object({
-	fcmToken: z.string(),
+	subscription: z.string(), // FCMトークンをsubscriptionに変更
 	isEnabled: z.boolean(),
 	platform: z.enum(["ios", "android", "web"]),
 });
@@ -14,7 +14,7 @@ const notificationSettingSchema = z.object({
 	id: z.string(),
 	userId: z.string(),
 	isEnabled: z.boolean(),
-	fcmToken: z.string(),
+	subscription: z.string(), // FCMトークンをsubscriptionに変更
 	platform: z.enum(["ios", "android", "web"]),
 	createdAt: z.string(),
 	updatedAt: z.string(),
