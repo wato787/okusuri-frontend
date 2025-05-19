@@ -4,11 +4,9 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Bell, BellOff } from 'lucide-react';
 import { useTransition } from 'react';
-
-import { messaging } from '@/lib/firebase';
-import { getToken } from 'firebase/messaging';
 import toast from 'react-hot-toast';
 
+import { initializeWebPush } from '@/lib/webpush';
 import { registerNotificationSetting } from '../action';
 import {
   type NotificationSetting as NotificationSettingType,
@@ -25,24 +23,18 @@ export function NotificationSetting({ notificationSetting }: Props) {
   const handleNotificationSetting = () => {
     startTransition(async () => {
       try {
-        // 通知許可を取得
-        const permission = await Notification.requestPermission();
-        const isEnabled = permission === 'granted';
-
-        if (!isEnabled) {
-          toast.error('通知の許可が必要です');
+        // Web Pushの初期化とサブスクリプション取得
+        const subscription = await initializeWebPush();
+        
+        if (!subscription) {
+          toast.error('通知の設定に失敗しました。通知の許可を確認してください。');
           return;
         }
 
-        // FCMトークンを取得
-        const fcmToken = await getToken(messaging!, {
-          vapidKey: process.env.NEXT_PUBLIC_FIREBASE_VAPID_KEY,
-        });
-
         // データを検証
         const validatedFields = registerNotificationSettingSchama.safeParse({
-          fcmToken,
-          isEnabled,
+          subscription,
+          isEnabled: true,
           platform: 'web',
         });
 
