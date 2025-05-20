@@ -6,8 +6,15 @@ import { revalidateTag } from "next/cache";
 // 服薬ログ登録処理
 export const registerMedicationLog = async (req: {
 	hasBleeding: boolean;
+	date?: Date;
 }) => {
-	const res = await post("/medication-log", req);
+	// dateが存在する場合はそのまま送信
+	const payload = {
+		hasBleeding: req.hasBleeding,
+		...(req.date && { date: req.date }),
+	};
+
+	const res = await post("/medication-log", payload);
 	if (res.status !== 200) {
 		return {
 			success: false,
@@ -24,8 +31,15 @@ export const registerMedicationLog = async (req: {
 // 服薬ログ更新処理
 export const updateMedicationLog = async (id: string, req: {
 	hasBleeding: boolean;
+	date?: Date;
 }) => {
-	const res = await patch(`/medication-log/${id}`, req);
+	// dateが存在する場合はそのまま送信
+	const payload = {
+		hasBleeding: req.hasBleeding,
+		...(req.date && { date: req.date }),
+	};
+
+	const res = await patch(`/medication-log/${id}`, payload);
 	if (res.status !== 200) {
 		return {
 			success: false,
