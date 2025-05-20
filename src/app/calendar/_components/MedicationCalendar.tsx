@@ -92,11 +92,13 @@ export function MedicationCalendar({ logs }: MedicationCalendarProps) {
         if (selectedDayLog) {
           await updateMedicationLog(selectedDayLog.id, {
             hasBleeding,
+            date: recordDate, // 選択された日付を送信
           });
           toast.success('記録を更新しました');
         } else {
           await registerMedicationLog({
             hasBleeding,
+            date: recordDate, // 選択された日付を送信
           });
           toast.success('記録を登録しました');
         }
